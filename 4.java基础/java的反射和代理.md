@@ -315,5 +315,128 @@ void set(Object obj,Object newValue)
 //将obj对象中这个Field对象描述的字段设置为一个新值
 ~~~
 
+## 生成泛型数组代码
 
+1. java.lang.reflect包中的Array类允许动态创建数组。
+
+2. 代码示例
+
+~~~java
+public class CopyOfTest {
+
+    public static void main(String[] args) {
+        int[] a = {1,2,3};
+        a = (int[]) goodCopyOf(a,10);
+        System.out.println(Arrays.toString(a));
+
+        Object[] b ={1,2,3};
+        System.out.println(Arrays.toString(b));
+
+    }
+
+    public static Object goodCopyOf(Object a,int newLength){
+        Class<?> cl = a.getClass();
+        if(!cl.isArray())return null;
+        Class<?> componentType = cl.getComponentType();
+        int length = Array.getLength(a);
+        Object newArray = Array.newInstance(componentType, newLength);
+        System.arraycopy(a,0,newArray,0,Math.min(length,newLength));
+        return newArray;
+    }
+}
+~~~
+
+2. 常用代码
+
+~~~java
+java.lang.reflect.Array
+static Object get(Object array,int index)
+static xxx getXxx(Object array,int index)
+//将返回存储在给定数组中给定索引位置上的值
+static void set(Object array,int index,Object newValue)
+static SetXxx(Obectt array,int index,xxx newValue)
+//将一个心智存储到给定数组中的给定位置
+static int getLength(Object array)
+//返回给定数组的长度
+static Object newInstance(Class componectType,int length)
+static Object newInstance(Class componectType,int[] lengths)
+//返回一个有给定类型、给定大小的新数组
+~~~
+
+## 调用任意方法和构造器
+
+1. 代码示例
+
+~~~java
+public class MethodTableTest {
+
+
+    public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException,
+            IllegalAccessException {
+        Method square = MethodTableTest.class.getMethod("square", double.class);
+        Method sqrt = Math.class.getMethod("sqrt", double.class);
+
+        printTable(1,10,10,square);
+        printTable(1,10,10,sqrt);
+    }
+
+    public static double square(double x) {
+        return x * x;
+    }
+
+    public static void printTable(double from, double to, int n, Method f) throws InvocationTargetException,
+            IllegalAccessException {
+        System.out.println(f);
+
+        double dx = (to - from) / (n - 1);
+
+        for (double x = from; x <= to; x += dx) {
+            double y = (Double) f.invoke(null, x);
+            System.out.printf("%10.4f | %10.4f%n", x, y);
+        }
+    }
+}
+~~~
+
+2. 常用方法
+
+~~~java
+java.lang.reflect.Method
+public Object invoke(Object implicitParameter,Object[] explicitParameters)
+//调用这个对象描述的方法，传入给定参数，并返回方法的返回值。对于静态方法，传入null作为隐式参数
+~~~
+
+# JAVA的代理
+
+1. 用途：利用代理可以在运行时创建实现了一组给定接口的新类。
+
+2. 代理类的创建
+
+   1. 代理类必须实现InvocationHandler接口
+
+   2. ~~~java
+      Object invoke(Object proxy,Method method,Object[] args)
+      ~~~
+
+   3. 用Proxy类的newProxyInstance方法创建一个代理对象，这个方法有三个参数
+
+      1. 一个类加载器(class loader)
+      2. 一个Class对象数组，每个元素对应需要实现的各个接口
+      3. 一个调用处理器
+
+3. 代理类的特性
+
+   1. 所有的代理类都扩展了Proxy类。一个代理类只有一个实例字段——即调用处理器，它在Proxy超类中定义，完成代理对象任务所需要的任何额外数据都必须存储在调用处理器中
+
+   2. 对于一个特定的类加载器和预设的一组接口来说，只能有一个代理类。
+
+   3. ~~~java
+      java.lang.reflect.InvocationHandler
+      Object invoke(Object proxy,Method method,Object[] args) //定义这个方法包含一个动作
+      
+      java.lang.reflect.Proxy
+      static Class<?> getProxyClass(ClassLoader loader,Class<?>... interfaces)//返回实现指定接口的代理类
+      static Object newProxyInstance(ClassLoader loader,Class<?>[] interfaces,InvocationHandler handler) //构造实现指定接口的代理类的一个新实例。所有方法都调用给定处理器对象的invoke方法
+      static boolean isProxyClass(Class<?> cl) //如果cl是一个代理类则返回true
+      ~~~
 
