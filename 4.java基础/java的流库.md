@@ -70,9 +70,9 @@
     1. ~~~java
        java.util.stream.Stream
        Stream<T> filter(Predicate<? super T> predicate) //产生一个流，它包含当前流中所有满足谓词条件的元素
-      
+        
        <R> Stream<R> map(Function<? super T,? extend R> mapper) //产生一个六，它包含将mapper应用于当前流中所有元素产生的结果
-      
+        
        <R> Stream<R> flatMap(Function<? super T,? extends Stream<? extends R>> mapper) //产生一个流，它是通过将mapper应用于当前流中所产生的结果连接到一起而获得的
        ~~~
 
@@ -123,3 +123,90 @@
 
 ## Optional类型
 
+### 1. 定义
+
+1. Optional<T>对象是一种包装器对象，要么包装了类型T的对象，要门没有包装任何对象
+
+### 获取Option值
+
+1. ~~~java
+   java.util.Optional
+   T orElse(T other) //产生这个Optional的值，或者在该Option为空时，产生other
+   T orElseGet(Supplier<? extends T> other) //产生这个Optional的值，或者在该Optional为空时，产生调用other的结果
+   <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) //产生这个Optional的值，或者在该Optional为空时，抛出调用ExceptionSupplier的结果
+   T get()
+   T orElseThrow() //产生这个Optional的值，或者在该Optional为空时，抛出一个NosuchElementException异常
+   boolean isPresent() //如果该Optional不为空，则返回true
+   ~~~
+
+### 消费Optional值
+
+1. ~~~java
+   java.util.Optional
+   void ifPresent(Consumer<? super T> action) //如果该Optional不为空，就将它的值传递给action
+   void ifPresentOrElse(Consumer<? super T> action,Runnable emptyAction) //如果该Optional不为空，就将它的值传递给action，否则调用emptyAction
+   ~~~
+
+管道化Optional值
+
+1. ~~~java
+   java.util.Optional
+   <U> optional<U> map(Function<? super T,? extends U> mapper) //产生一个Optional，如果当前的Optional的值存在，那么所产生的Optional的值是通过将给定的函数应用于当前的Optional的值而得到的；否则，产生一个空的Optional
+   Optional<T> filter(Predicate<? super T> predicate) //产生一个Optional，如果当前的Optional的值满足给定的谓词条件，那么所产生的Optional的值就是当前Optional的值；否则，产生一个空的Optional
+   Optional<T> or(Supplier<? extends Option<? extends T>> supplier) //如果当前Optional不为空，则产生当前的Optional；否则由supplier产生一个Optional
+   ~~~
+
+### 创建Optional值
+
+1. ~~~java
+   java.util.Optional
+   static <T> Optional<T> of(T value)
+   static <T> optional<T> ofNullable(T value) //产生一个具有给定值的Optional
+   static <T> Optional<T> empty() //产生一个空Optional
+   ~~~
+
+### flatMap
+
+1. ~~~java
+   java.util.Optional
+   <U> Optional<U> flatMap(Function<? super T,? extends Optional<? extends U>> mapper) //如果Optional存在，产生将mapper应用于当前Optional值所产生的结果，或者在当前Optinal为空时，返回一个空Optinal
+   ~~~
+
+### 收集结果
+
+1. ~~~java
+   java.util.Stream.BaseStream 
+   Iterator<T> iterator() //c产生一个用于获取当前流中各个元素的迭代器
+   
+   java.util.stream.Stream
+   void forEach(consumer<? super T> action) //在流的每个元素上调用action
+   Object[] toArray() 
+   <A> A[] toArray(InterFunction<A[]> generator) //产生一个对象数组，或者再将引用A[]::new传递给构造器时，返回一个A类型的数组
+   <R,A> R collect(Coleector<? super T,A,R> collector) //使用给定的收集器来收集当前流中的元素。COllectors类有用于多种收集器的工厂方法
+   
+   long getCount() //产生汇总后的元素的个数
+   (int|long|double) getSum() 
+   double getAverage() //产生汇总后的元素的总和或平均值，或者在没有任何元素时返回0
+   (int|long|double) getMax()
+   (int|long|double) getMin() //产生汇总后的元素的最大值和最小值，或者在没有任何元素时，产生(Integer|long|Double).(MAX|MIN)_VALUE
+   ~~~
+
+### java.util.stream.Collertors有各种收集器
+
+1. ~~~java
+   java.util.stream.Collectors
+   static <T> Collector<T,?,List<T>> toList()
+   static <T> Collector<T,?,Set<T>> toSet() //产生一个元素收集到列表或集合中的收集器
+   ~~~
+
+### 基本流类型
+
+1. 基本类型包装到包装器对象是低效的，因此，有专门的基本类型流。
+
+### 并行流
+
+1. 流使并行处理块操作变得很容易。但是，必须要有一个并行流，可以通过Collection.parallelStream()或者parallel方法获得
+2. 操作要点
+   1. 并行化会导致大量的开销，只有面对非常大的数据集才划算
+   2. 只有在底层的数据源可以被有效地分割为多个部分时，将流并行化才有意义
+   3. 并行流使用地线程池可能会因诸如文件I/O或网络访问这样的操作被组塞而饿死
