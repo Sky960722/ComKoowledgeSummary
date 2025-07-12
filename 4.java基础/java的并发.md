@@ -231,7 +231,34 @@ void run() //执行的方法
 
    1. 当有一个Future对象时，需要调用get来获得值，这个方法会阻塞，直到值可用。CompletableFuture类实现了Future接口，他提供了获得结果的另一种机制。
 
-      1. ~~~
+      1. ~~~java
          CompletableFuture<String> f =...;
-         f.thenAccept(s -> Process the result string s);
+         f.thenAccept(s -> Process the result string s)
          ~~~
+   
+2. 为`CompletableFuture<T>`对象增加一个动作
+
+   | 方法              | 参数                    | 描述                                   |
+   | ----------------- | ----------------------- | -------------------------------------- |
+   | thenApply         | T -> U                  | 对结果应用一个函数                     |
+   | thenAccept        | T->void                 | 类似于thenApply，不过结果为void        |
+   | thenCompose       | T->VompletableFuture<U> | 对结果调用函数并执行返回的future       |
+   | handle            | (T,Throwable) -> U      | 处理结果或错误，生成一个新结果         |
+   | whenComplete      | (T,Throwable) -> void   | 类似于handle，不过结果为void           |
+   | exceptionally     | Throwable -> T          | 从错误计算一个结果                     |
+   | completeOnTimeout | T,long,TimeUnint        | 如果超时，生成给定值作为结果           |
+   | orTimeout         | long，TimeUnit          | 如果超时，生成一个TimeoutException异常 |
+   | thenRun           | Runable                 | 执行Runable，结果为void                |
+
+3. 组合多个future的方法
+
+   | 方法           | 参数                             | 描述                                     |
+   | -------------- | -------------------------------- | ---------------------------------------- |
+   | thenCombin     | CompletableFuture<U>,(T,U)->V    | 执行两个动作并用给定函数组合结果         |
+   | thenAcceptBoth | CompletableFuture<U>,(T,U)->void | 与thenCombine类似，不过结果为void        |
+   | runAfterBoth   | CompletableFuture<?>,Runable     | 两个都完成后执行runable                  |
+   | applyToEither  | CompletableFuture<T>,T -> V      | 得到其中一个的结果时，传入给定的函数     |
+   | acceptEither   | CompletableFuture<T>,T -> void   | 与applyToEither类似，不过结果为void      |
+   | runAfterEither | CompletableFuture<?>,Runable     | 其中一个完成后执行 runable               |
+   | static allof   | CompletableFuture<?>...          | 所有给定的future都完成后完成，结果为void |
+   | static anyof   | Completable<?>...                | 任意给定的future完成后则完成，结果为void |
